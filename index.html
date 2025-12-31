@@ -161,7 +161,7 @@
 
             explode() {
                 this.exploded = true;
-                const particleCount = 80 + Math.random() * 40;
+                const particleCount = 50 + Math.random() * 30; // 从80-120减少到50-80
 
                 switch (this.pattern) {
                     case 'circle':
@@ -402,18 +402,16 @@
             // 移除已消失的烟花
             fireworks = fireworks.filter(firework => !firework.isDead());
 
-            // 随机发射新烟花
-            if (Math.random() < 0.05) {
+            // 随机发射新烟花 - 降低频率
+            if (Math.random() < 0.015) {  // 从0.05降到0.015,发射频率降低约70%
                 createRandomFirework();
             }
 
             requestAnimationFrame(animate);
         }
 
-        // 初始发射几个烟花
-        setTimeout(() => createRandomFirework(), 500);
-        setTimeout(() => createRandomFirework(), 1500);
-        setTimeout(() => createRandomFirework(), 2500);
+        // 初始发射烟花 - 减少初始数量
+        setTimeout(() => createRandomFirework(), 1000);
 
         // 开始动画
         animate();
