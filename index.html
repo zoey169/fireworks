@@ -62,13 +62,13 @@
                 this.color = color;
                 this.velocity = velocity;
                 this.alpha = 1;
-                this.decay = Math.random() * 0.02 + 0.01;
+                this.decay = Math.random() * 0.008 + 0.004; // 降低消散速度(原来0.01-0.03,现在0.004-0.012)
                 this.gravity = gravity;
                 this.size = Math.random() * 3 + 2;
             }
 
             update() {
-                this.velocity.x *= 0.98; // 空气阻力
+                this.velocity.x *= 0.99; // 降低空气阻力,让粒子飞得更远
                 this.velocity.y += this.gravity; // 重力
                 this.x += this.velocity.x;
                 this.y += this.velocity.y;
