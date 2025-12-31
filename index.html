@@ -62,32 +62,57 @@
                 this.color = color;
                 this.velocity = velocity;
                 this.alpha = 1;
-                this.decay = Math.random() * 0.008 + 0.004; // 降低消散速度(原来0.01-0.03,现在0.004-0.012)
+                this.decay = Math.random() * 0.008 + 0.004;
                 this.gravity = gravity;
-                this.size = Math.random() * 3 + 2;
+                this.size = Math.random() * 2.5 + 1.5;
+                this.brightness = 1 + Math.random() * 0.5; // 亮度随机
+                this.twinkle = Math.random() * Math.PI * 2; // 闪烁相位
+                this.twinkleSpeed = 0.1 + Math.random() * 0.1;
             }
 
             update() {
-                this.velocity.x *= 0.99; // 降低空气阻力,让粒子飞得更远
-                this.velocity.y += this.gravity; // 重力
+                this.velocity.x *= 0.99;
+                this.velocity.y += this.gravity;
                 this.x += this.velocity.x;
                 this.y += this.velocity.y;
                 this.alpha -= this.decay;
+                this.twinkle += this.twinkleSpeed; // 闪烁动画
             }
 
             draw() {
+                // 闪烁效果 (0.7-1.0之间波动)
+                const twinkleAlpha = 0.7 + Math.sin(this.twinkle) * 0.3;
+                const currentAlpha = this.alpha * twinkleAlpha;
+
                 ctx.save();
-                ctx.globalAlpha = this.alpha;
-                ctx.fillStyle = this.color;
+
+                // 外层大光晕 (强烈发光)
+                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 8);
+                gradient.addColorStop(0, this.color.replace('rgb', 'rgba').replace(')', `, ${currentAlpha * 0.8})`));
+                gradient.addColorStop(0.3, this.color.replace('rgb', 'rgba').replace(')', `, ${currentAlpha * 0.4})`));
+                gradient.addColorStop(1, this.color.replace('rgb', 'rgba').replace(')', ', 0)'));
+                ctx.fillStyle = gradient;
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y, this.size * 8, 0, Math.PI * 2);
                 ctx.fill();
 
-                // 添加光晕效果
-                ctx.globalAlpha = this.alpha * 0.3;
+                // 中层光晕
+                ctx.globalAlpha = currentAlpha * 0.8;
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = this.color;
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y, this.size * 1.5, 0, Math.PI * 2);
                 ctx.fill();
+
+                // 核心亮点 (最亮)
+                ctx.globalAlpha = currentAlpha * this.brightness;
+                ctx.shadowBlur = 15;
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 0.6, 0, Math.PI * 2);
+                ctx.fill();
+
                 ctx.restore();
             }
 
@@ -356,24 +381,59 @@
             }
         }
 
-        // 优化后的配色方案 - 更协调的色系搭配
+        // 更亮的配色方案 - 模拟真实烟花的发光效果
         const colorSchemes = [
-            // 金色系
-            ['rgb(255, 215, 0)', 'rgb(255, 185, 15)', 'rgb(255, 140, 0)'],
-            // 蓝紫系
-            ['rgb(138, 43, 226)', 'rgb(147, 112, 219)', 'rgb(186, 85, 211)'],
-            // 红粉系
-            ['rgb(255, 20, 147)', 'rgb(255, 105, 180)', 'rgb(255, 182, 193)'],
-            // 青绿系
-            ['rgb(0, 255, 255)', 'rgb(64, 224, 208)', 'rgb(127, 255, 212)'],
-            // 银白系
-            ['rgb(255, 255, 255)', 'rgb(230, 230, 250)', 'rgb(211, 211, 211)'],
-            // 橙红系
-            ['rgb(255, 69, 0)', 'rgb(255, 99, 71)', 'rgb(255, 127, 80)']
+            // 璀璨金色
+            ['rgb(255, 230, 100)', 'rgb(255, 215, 0)', 'rgb(255, 200, 50)'],
+            // 炫紫蓝
+            ['rgb(180, 120, 255)', 'rgb(147, 112, 255)', 'rgb(200, 160, 255)'],
+            // 亮粉红
+            ['rgb(255, 100, 200)', 'rgb(255, 150, 220)', 'rgb(255, 200, 230)'],
+            // 荧光青
+            ['rgb(100, 255, 255)', 'rgb(150, 255, 255)', 'rgb(200, 255, 255)'],
+            // 纯白银
+            ['rgb(255, 255, 255)', 'rgb(240, 240, 255)', 'rgb(255, 255, 240)'],
+            // 火焰橙
+            ['rgb(255, 150, 50)', 'rgb(255, 180, 80)', 'rgb(255, 200, 120)'],
+            // 翠绿
+            ['rgb(150, 255, 150)', 'rgb(180, 255, 180)', 'rgb(200, 255, 200)']
         ];
 
         // 更多绽放模式
         const patterns = ['circle', 'ring', 'heart', 'spiral', 'double', 'willow', 'crossette', 'chrysanthemum', 'palm'];
+
+        // 星星背景类
+        class Star {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 1.5;
+                this.alpha = Math.random() * 0.5 + 0.3;
+                this.twinkle = Math.random() * Math.PI * 2;
+                this.twinkleSpeed = Math.random() * 0.05 + 0.02;
+            }
+
+            update() {
+                this.twinkle += this.twinkleSpeed;
+            }
+
+            draw() {
+                const brightness = 0.5 + Math.sin(this.twinkle) * 0.5;
+                ctx.save();
+                ctx.globalAlpha = this.alpha * brightness;
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // 创建星星
+        const stars = [];
+        for (let i = 0; i < 100; i++) {
+            stars.push(new Star());
+        }
 
         // 烟花数组
         let fireworks = [];
@@ -390,8 +450,14 @@
         // 动画循环
         function animate() {
             // 半透明黑色覆盖,产生拖尾效果
-            ctx.fillStyle = 'rgba(10, 14, 39, 0.15)';
+            ctx.fillStyle = 'rgba(10, 14, 39, 0.2)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制星星
+            stars.forEach(star => {
+                star.update();
+                star.draw();
+            });
 
             // 更新和绘制所有烟花
             fireworks.forEach(firework => {
